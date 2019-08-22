@@ -6,23 +6,16 @@ const dt = require('datatables');
 
 let PORT = process.env.PORT || 3000;
 
+// public
+app.use(express.static('./app/view/public'));
+
+// routing; when a dir is required, it will look for the index.js; index.js exports router
+app.use(require('./app/routes'));
+
 // middleware
 router.use(function timeLog(req, res, next) {
     console.log('Time: ', Date.now());
     next();
 });
 
-// public
-app.use(express.static('./app/view/public'));
-
-// define the home page route
-router.get('/', (req, res) => {
-    res.send('home page');
-});
-
-// define the about route
-router.get('/api/data', function (req, res) {
-    res.send('t1');
-})
-
-module.exports = router
+app.listen(3000, () => { console.log(`App is listening on PORT: ${PORT}`) });
