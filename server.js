@@ -1,28 +1,40 @@
 const express = require('express');
 const router = express.Router();
-const app = express();
 const mysql = require('mysql');
 const dt = require('datatables');
+const morgan = require('morgan');
+const uuid = require('node-uuid');
 
 let PORT = process.env.PORT || 3000;
 
-// middleware
-router.use(function timeLog(req, res, next) {
-    console.log('Time: ', Date.now());
-    next();
+// start logging
+morgan.token('id', function getId(req) {
+    return req.id
+})
+
+// start express
+const app = express();
+
+// assign uuid to requests
+app.use(assignId);
+app.use(morgan(':id :method :url :response-time'));
+
+// time stamp logging
+app.use(function (req, res, next) {
+    console.log('Time:', Date.now());
+    next()
 });
 
 // public
 app.use(express.static('./app/view/public'));
 
-// define the home page route
-router.get('/', (req, res) => {
-    res.send('home page');
-});
+// routing; when a dir is required, it will look for the index.js; index.js exports router
+app.use(require('./app/routes'));
 
-// define the about route
-router.get('/api/data', function (req, res) {
-    res.send('t1');
-})
+// morgan - assign an id to logs
+function assignId(req, res, next) {
+    req.id = uuid.v4();
+    next();
+}
 
-module.exports = router
+app.listen(3000, () => { console.log(`App is listening on PORT: ${PORT}`) });
